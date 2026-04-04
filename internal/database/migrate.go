@@ -20,7 +20,8 @@ func Migrate() {
 		amount NUMERIC NOT NULL,
 		type TEXT CHECK (type IN ('income', 'expense')),
 		category TEXT,
-		note TEXT,
+		notes TEXT,
+        date TIMESTAMP,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);
 	`
