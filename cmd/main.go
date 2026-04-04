@@ -64,11 +64,17 @@ func main() {
 		})
 	})
 
-	protected.POST("/records", recordHandler.CreateRecord)
-protected.GET("/records", recordHandler.GetRecords)              
-protected.GET("/records/:id", recordHandler.GetRecordByID)      
-protected.DELETE("/records/:id", recordHandler.DeleteRecord) 
-protected.PUT("/:id", recordHandler.UpdateRecord)
+records := protected.Group("/records")
+{
+	records.POST("", middleware.RequireRole("editor", "admin"), recordHandler.CreateRecord)
+
+	records.GET("", middleware.RequireRole("viewer", "editor", "admin"), recordHandler.GetRecords)
+	records.GET("/:id", middleware.RequireRole("viewer", "editor", "admin"), recordHandler.GetRecordByID)
+
+	records.PUT("/:id", middleware.RequireRole("editor", "admin"), recordHandler.UpdateRecord)
+
+	records.DELETE("/:id", middleware.RequireRole("admin"), recordHandler.DeleteRecord)
+}
 
 	// Start server (ALWAYS LAST)
 	port := os.Getenv("PORT")
