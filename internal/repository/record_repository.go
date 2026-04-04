@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"finance-backend/internal/models"
 	"database/sql"
+	"finance-backend/internal/models"
 	"fmt"
 )
 
@@ -10,6 +10,7 @@ type RecordRepository struct {
 	DB *sql.DB
 }
 
+// ✅ CREATE (ONLY DB LOGIC)
 func (r *RecordRepository) Create(record *models.Record) error {
 	query := `
 		INSERT INTO records (user_id, amount, type, category, date, notes, created_at)
@@ -27,7 +28,6 @@ func (r *RecordRepository) Create(record *models.Record) error {
 		record.Notes,
 	).Scan(&record.ID, &record.CreatedAt)
 }
-
 func (r *RecordRepository) GetRecordsByUserID(userID int) ([]models.Record, error) {
     query := `
         SELECT id, user_id, amount, type, category, notes, date, created_at

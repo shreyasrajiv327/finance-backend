@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"fmt"
 )
 
 
@@ -69,40 +70,47 @@ func (h *AuthHandler) Register(c *gin.Context) {
 }
 
 
-func (h *AuthHandler) Login(c *gin.Context){
+func (h *AuthHandler) Login(c *gin.Context) {
 	var input models.LoginInput
 
-	if err := c.ShouldBindJSON(&input); err!=nil{
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
 	user, err := h.Repo.GetByEmail(input.Email)
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
+	// 🔥 FIX: CHECK bcrypt result
 	err = bcrypt.CompareHashAndPassword(
 		[]byte(user.Password),
 		[]byte(input.Password),
 	)
-
-	secret := os.Getenv(("JWT_SECRET"))
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
-		"email": user.Email,
-		"role": user.Role,
-		"exp": time.Now().Add(time.Hour* 24).Unix(),
-	})
-
-	tokenString, err := token.SignedString([]byte(secret))
-	if err!= nil{
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
+	secret := os.Getenv("JWT_SECRET")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.ID,
+		"email":   user.Email,
+		"role":    user.Role,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+     fmt.Println("INPUT EMAIL:", input.Email)
+fmt.Println("INPUT PASS:", input.Password)
+fmt.Println("DB HASH:", user.Password)
 	c.JSON(http.StatusOK, gin.H{
 		"token": tokenString,
 	})

@@ -1,41 +1,41 @@
 package handlers
 
-import(
+import (
 	"finance-backend/internal/models"
 	"finance-backend/internal/repository"
 	"net/http"
-	"github.com/gin-gonic/gin"
 	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-type RecordHandler struct{
+type RecordHandler struct {
 	Repo *repository.RecordRepository
 }
 
-
-func (h *RecordHandler) CreateRecord(c *gin.Context){
+// ✅ CREATE RECORD
+func (h *RecordHandler) CreateRecord(c *gin.Context) {
 	var input models.Record
-    
-	// parse request
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	// basic validation
 	if input.Amount <= 0 || (input.Type != "income" && input.Type != "expense") {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid amount or type"})
 		return
 	}
 
-	// get user_id from middleware
-	userIDRaw, _ := c.Get("user_id")
-userID := int(userIDRaw.(float64)) 
+	userID := c.GetInt("user_id")
 
-//record.UserID = userID
+	if input.Date.IsZero() {
+		input.Date = time.Now()
+	}
 
 	record := models.Record{
-		UserID:   userID, // JWT gives float64
+		UserID:   userID,
 		Amount:   input.Amount,
 		Type:     input.Type,
 		Category: input.Category,
@@ -43,108 +43,94 @@ userID := int(userIDRaw.(float64))
 		Notes:    input.Notes,
 	}
 
-err := h.Repo.Create(&record)
-if err != nil {
-	println("DB ERROR:", err.Error()) // 🔥 IMPORTANT
-	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create record"})
-	return
-}
-
-	c.JSON(http.StatusCreated, record)
-
-}
-
-func (h *RecordHandler) GetRecords(c *gin.Context) {
-    userID := c.GetInt("user_id")
-
-    records, err := h.Repo.GetRecordsByUserID(userID)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "Failed to fetch records"})
-        return
-    }
-
-    c.JSON(200, records)
-}
-
-func (h *RecordHandler) GetRecordByID(c *gin.Context) {
-    userID := c.GetInt("user_id")
-    idParam := c.Param("id")
-
-    id, err := strconv.Atoi(idParam)
-    if err != nil {
-        c.JSON(400, gin.H{"error": "Invalid ID"})
-        return
-    }
-
-    record, err := h.Repo.GetRecordByID(id)
-    if err != nil {
-        c.JSON(404, gin.H{"error": "Record not found"})
-        return
-    }
-
-    // 🔥 Ownership check
-    if record.UserID != userID {
-        c.JSON(403, gin.H{"error": "Forbidden"})
-        return
-    }
-
-    c.JSON(200, record)
-}
-
-
-func (h *RecordHandler) DeleteRecord(c *gin.Context) {
-    userID := c.GetInt("user_id")
-    id, _ := strconv.Atoi(c.Param("id"))
-
-    record, err := h.Repo.GetRecordByID(id)
-    if err != nil {
-        c.JSON(404, gin.H{"error": "Not found"})
-        return
-    }
-
-    if record.UserID != userID {
-        c.JSON(403, gin.H{"error": "Forbidden"})
-        return
-    }
-
-    err = h.Repo.DeleteRecord(id)
-    if err != nil {
-        c.JSON(500, gin.H{"error": "Delete failed"})
-        return
-    }
-
-    c.JSON(200, gin.H{"message": "Deleted"})
-}
-
-func (h *RecordHandler) UpdateRecord(c *gin.Context) {
-	userID := c.GetInt("user_id")
-	id, err := strconv.Atoi(c.Param("id"))
+	err := h.Repo.Create(&record)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Fetch existing record
+	c.JSON(http.StatusCreated, record)
+}
+
+// ✅ GET ALL
+func (h *RecordHandler) GetRecords(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	records, err := h.Repo.GetRecordsByUserID(userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch records"})
+		return
+	}
+
+	c.JSON(200, records)
+}
+
+// ✅ GET BY ID
+func (h *RecordHandler) GetRecordByID(c *gin.Context) {
+	userID := c.GetInt("user_id")
+	id, _ := strconv.Atoi(c.Param("id"))
+
 	record, err := h.Repo.GetRecordByID(id)
 	if err != nil {
 		c.JSON(404, gin.H{"error": "Record not found"})
 		return
 	}
 
-	// Ownership check
 	if record.UserID != userID {
 		c.JSON(403, gin.H{"error": "Forbidden"})
 		return
 	}
 
-	// Bind input
+	c.JSON(200, record)
+}
+
+// ✅ DELETE
+func (h *RecordHandler) DeleteRecord(c *gin.Context) {
+	userID := c.GetInt("user_id")
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	record, err := h.Repo.GetRecordByID(id)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Not found"})
+		return
+	}
+
+	if record.UserID != userID {
+		c.JSON(403, gin.H{"error": "Forbidden"})
+		return
+	}
+
+	err = h.Repo.DeleteRecord(id)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Delete failed"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Deleted"})
+}
+
+// ✅ UPDATE
+func (h *RecordHandler) UpdateRecord(c *gin.Context) {
+	userID := c.GetInt("user_id")
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	record, err := h.Repo.GetRecordByID(id)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Not found"})
+		return
+	}
+
+	if record.UserID != userID {
+		c.JSON(403, gin.H{"error": "Forbidden"})
+		return
+	}
+
 	var input models.Record
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid input"})
 		return
 	}
 
-	// Partial update logic
 	if input.Amount != 0 {
 		record.Amount = input.Amount
 	}
@@ -170,63 +156,7 @@ func (h *RecordHandler) UpdateRecord(c *gin.Context) {
 	c.JSON(200, record)
 }
 
-func (h *RecordHandler) GetFilteredRecords(c *gin.Context) {
-	userID := c.GetInt("user_id")
-
-	// Query params
-	recordType := c.Query("type")
-	category := c.Query("category")
-	startDate := c.Query("start_date")
-	endDate := c.Query("end_date")
-
-	limitStr := c.DefaultQuery("limit", "10")
-	offsetStr := c.DefaultQuery("offset", "0")
-
-	limit, _ := strconv.Atoi(limitStr)
-	offset, _ := strconv.Atoi(offsetStr)
-
-	records, err := h.Repo.GetFilteredRecords(
-		userID,
-		recordType,
-		category,
-		startDate,
-		endDate,
-		limit,
-		offset,
-	)
-
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(200, records)
-}
-
-func (h *RecordHandler) GetCategorySummary(c *gin.Context) {
-	userID := c.GetInt("user_id")
-
-	data, err := h.Repo.GetCategorySummary(userID)
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to fetch category summary"})
-		return
-	}
-
-	c.JSON(200, data)
-}
-
-func (h *RecordHandler) GetRecentRecords(c *gin.Context) {
-	userID := c.GetInt("user_id")
-
-	records, err := h.Repo.GetRecentRecords(userID, 5)
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to fetch recent records"})
-		return
-	}
-
-	c.JSON(200, records)
-}
-
+// ✅ SUMMARY
 func (h *RecordHandler) GetSummary(c *gin.Context) {
 	userID := c.GetInt("user_id")
 
@@ -243,6 +173,33 @@ func (h *RecordHandler) GetSummary(c *gin.Context) {
 	})
 }
 
+// ✅ CATEGORY SUMMARY
+func (h *RecordHandler) GetCategorySummary(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	data, err := h.Repo.GetCategorySummary(userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch category summary"})
+		return
+	}
+
+	c.JSON(200, data)
+}
+
+// ✅ RECENT RECORDS
+func (h *RecordHandler) GetRecentRecords(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	data, err := h.Repo.GetRecentRecords(userID, 5)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch recent records"})
+		return
+	}
+
+	c.JSON(200, data)
+}
+
+// ✅ MONTHLY SUMMARY
 func (h *RecordHandler) GetMonthlySummary(c *gin.Context) {
 	userID := c.GetInt("user_id")
 

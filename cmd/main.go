@@ -33,6 +33,7 @@ func main() {
 	database.Migrate()
 
 	r := gin.Default()
+    r.RedirectTrailingSlash = false
 
 	// Public route
 	r.GET("/ping", func(c *gin.Context) {
@@ -66,18 +67,19 @@ func main() {
 
 records := protected.Group("/records")
 {
-	records.POST("", middleware.RequireRole("editor", "admin"), recordHandler.CreateRecord)
+records.POST("", middleware.RequireRole("admin", "editor"), recordHandler.CreateRecord)
 
-	records.GET("", middleware.RequireRole("viewer", "editor", "admin"), recordHandler.GetRecords)
-	records.GET("/:id", middleware.RequireRole("viewer", "editor", "admin"), recordHandler.GetRecordByID)
+records.GET("/", recordHandler.GetRecords)
+records.GET("/:id", recordHandler.GetRecordByID)
 
-	records.PUT("/:id", middleware.RequireRole("editor", "admin"), recordHandler.UpdateRecord)
+records.PUT("/:id", middleware.RequireRole("admin", "editor"), recordHandler.UpdateRecord)
 
-	records.DELETE("/:id", middleware.RequireRole("admin"), recordHandler.DeleteRecord)
-	records.GET("/category-summary", recordHandler.GetCategorySummary)
-	records.GET("/recent", recordHandler.GetRecentRecords)
-	records.GET("/summary", recordHandler.GetSummary)
-	records.GET("/monthly", recordHandler.GetMonthlySummary)
+records.DELETE("/:id", middleware.RequireRole("admin"), recordHandler.DeleteRecord)
+
+records.GET("/category-summary", recordHandler.GetCategorySummary)
+records.GET("/recent", recordHandler.GetRecentRecords)
+records.GET("/summary", recordHandler.GetSummary)
+records.GET("/monthly", recordHandler.GetMonthlySummary)
 }
 
 	// Start server (ALWAYS LAST)
@@ -88,3 +90,4 @@ records := protected.Group("/records")
 
 	r.Run(":" + port)
 }
+
