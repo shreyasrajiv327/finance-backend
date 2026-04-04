@@ -14,7 +14,7 @@ type RecordHandler struct {
 	Repo *repository.RecordRepository
 }
 
-// ✅ CREATE RECORD
+
 func (h *RecordHandler) CreateRecord(c *gin.Context) {
 	var input models.Record
 
@@ -52,7 +52,7 @@ func (h *RecordHandler) CreateRecord(c *gin.Context) {
 	c.JSON(http.StatusCreated, record)
 }
 
-// ✅ GET ALL
+
 func (h *RecordHandler) GetRecords(c *gin.Context) {
 	userID := c.GetInt("user_id")
 
@@ -65,7 +65,7 @@ func (h *RecordHandler) GetRecords(c *gin.Context) {
 	c.JSON(200, records)
 }
 
-// ✅ GET BY ID
+
 func (h *RecordHandler) GetRecordByID(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -84,7 +84,7 @@ func (h *RecordHandler) GetRecordByID(c *gin.Context) {
 	c.JSON(200, record)
 }
 
-// ✅ DELETE
+
 func (h *RecordHandler) DeleteRecord(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -109,7 +109,7 @@ func (h *RecordHandler) DeleteRecord(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "Deleted"})
 }
 
-// ✅ UPDATE
+
 func (h *RecordHandler) UpdateRecord(c *gin.Context) {
 	userID := c.GetInt("user_id")
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -156,7 +156,7 @@ func (h *RecordHandler) UpdateRecord(c *gin.Context) {
 	c.JSON(200, record)
 }
 
-// ✅ SUMMARY
+
 func (h *RecordHandler) GetSummary(c *gin.Context) {
 	userID := c.GetInt("user_id")
 
@@ -173,7 +173,7 @@ func (h *RecordHandler) GetSummary(c *gin.Context) {
 	})
 }
 
-// ✅ CATEGORY SUMMARY
+
 func (h *RecordHandler) GetCategorySummary(c *gin.Context) {
 	userID := c.GetInt("user_id")
 
@@ -186,7 +186,7 @@ func (h *RecordHandler) GetCategorySummary(c *gin.Context) {
 	c.JSON(200, data)
 }
 
-// ✅ RECENT RECORDS
+
 func (h *RecordHandler) GetRecentRecords(c *gin.Context) {
 	userID := c.GetInt("user_id")
 
@@ -199,7 +199,7 @@ func (h *RecordHandler) GetRecentRecords(c *gin.Context) {
 	c.JSON(200, data)
 }
 
-// ✅ MONTHLY SUMMARY
+
 func (h *RecordHandler) GetMonthlySummary(c *gin.Context) {
 	userID := c.GetInt("user_id")
 

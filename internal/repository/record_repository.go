@@ -10,7 +10,7 @@ type RecordRepository struct {
 	DB *sql.DB
 }
 
-// ✅ CREATE (ONLY DB LOGIC)
+
 func (r *RecordRepository) Create(record *models.Record) error {
 	query := `
 		INSERT INTO records (user_id, amount, type, category, date, notes, created_at)
