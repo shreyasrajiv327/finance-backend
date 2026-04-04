@@ -65,6 +65,10 @@ func main() {
 	})
 
 	protected.POST("/records", recordHandler.CreateRecord)
+protected.GET("/records", recordHandler.GetRecords)              
+protected.GET("/records/:id", recordHandler.GetRecordByID)      
+protected.DELETE("/records/:id", recordHandler.DeleteRecord) 
+protected.PUT("/:id", recordHandler.UpdateRecord)
 
 	// Start server (ALWAYS LAST)
 	port := os.Getenv("PORT")
