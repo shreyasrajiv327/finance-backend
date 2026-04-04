@@ -202,3 +202,55 @@ func (h *RecordHandler) GetFilteredRecords(c *gin.Context) {
 
 	c.JSON(200, records)
 }
+
+func (h *RecordHandler) GetCategorySummary(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	data, err := h.Repo.GetCategorySummary(userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch category summary"})
+		return
+	}
+
+	c.JSON(200, data)
+}
+
+func (h *RecordHandler) GetRecentRecords(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	records, err := h.Repo.GetRecentRecords(userID, 5)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch recent records"})
+		return
+	}
+
+	c.JSON(200, records)
+}
+
+func (h *RecordHandler) GetSummary(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	income, expense, err := h.Repo.GetSummary(userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch summary"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"total_income":  income,
+		"total_expense": expense,
+		"balance":       income - expense,
+	})
+}
+
+func (h *RecordHandler) GetMonthlySummary(c *gin.Context) {
+	userID := c.GetInt("user_id")
+
+	data, err := h.Repo.GetMonthlySummary(userID)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to fetch monthly summary"})
+		return
+	}
+
+	c.JSON(200, data)
+}

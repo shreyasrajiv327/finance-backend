@@ -192,3 +192,132 @@ func (r *RecordRepository) GetFilteredRecords(
 	return records, nil
 }
 
+func (r *RecordRepository) GetCategorySummary(userID int) ([]map[string]interface{}, error) {
+	query := `
+		SELECT category, SUM(amount) as total
+		FROM records
+		WHERE user_id = $1 AND type = 'expense'
+		GROUP BY category
+		ORDER BY total DESC
+	`
+
+	rows, err := r.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []map[string]interface{}
+
+	for rows.Next() {
+		var category string
+		var total float64
+
+		if err := rows.Scan(&category, &total); err != nil {
+			return nil, err
+		}
+
+		result = append(result, map[string]interface{}{
+			"category": category,
+			"total":    total,
+		})
+	}
+
+	return result, nil
+}
+
+func (r *RecordRepository) GetRecentRecords(userID int, limit int) ([]models.Record, error) {
+	query := `
+		SELECT id, user_id, amount, type, category, notes, date, created_at
+		FROM records
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2
+	`
+
+	rows, err := r.DB.Query(query, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []models.Record
+
+	for rows.Next() {
+		var record models.Record
+		err := rows.Scan(
+			&record.ID,
+			&record.UserID,
+			&record.Amount,
+			&record.Type,
+			&record.Category,
+			&record.Notes,
+			&record.Date,
+			&record.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, record)
+	}
+
+	return records, nil
+}
+
+func (r *RecordRepository) GetSummary(userID int) (float64, float64, error) {
+	query := `
+		SELECT
+			COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0),
+			COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0)
+		FROM records
+		WHERE user_id = $1
+	`
+
+	var totalIncome, totalExpense float64
+
+	err := r.DB.QueryRow(query, userID).Scan(&totalIncome, &totalExpense)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return totalIncome, totalExpense, nil
+}
+
+func (r *RecordRepository) GetMonthlySummary(userID int) ([]map[string]interface{}, error) {
+	query := `
+		SELECT
+			DATE_TRUNC('month', date) AS month,
+			SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS income,
+			SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS expense
+		FROM records
+		WHERE user_id = $1
+		GROUP BY month
+		ORDER BY month
+	`
+
+	rows, err := r.DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []map[string]interface{}
+
+	for rows.Next() {
+		var month string
+		var income, expense float64
+
+		err := rows.Scan(&month, &income, &expense)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, map[string]interface{}{
+			"month":   month,
+			"income":  income,
+			"expense": expense,
+		})
+	}
+
+	return results, nil
+}

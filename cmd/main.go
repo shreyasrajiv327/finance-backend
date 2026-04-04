@@ -74,6 +74,10 @@ records := protected.Group("/records")
 	records.PUT("/:id", middleware.RequireRole("editor", "admin"), recordHandler.UpdateRecord)
 
 	records.DELETE("/:id", middleware.RequireRole("admin"), recordHandler.DeleteRecord)
+	records.GET("/category-summary", recordHandler.GetCategorySummary)
+	records.GET("/recent", recordHandler.GetRecentRecords)
+	records.GET("/summary", recordHandler.GetSummary)
+	records.GET("/monthly", recordHandler.GetMonthlySummary)
 }
 
 	// Start server (ALWAYS LAST)
