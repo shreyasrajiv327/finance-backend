@@ -211,3 +211,33 @@ func (h *RecordHandler) GetMonthlySummary(c *gin.Context) {
 
 	c.JSON(200, data)
 }
+
+func (h *RecordHandler) GetFilteredRecords(c *gin.Context) {
+    userID := c.GetInt("user_id")
+
+    recordType := c.Query("type")
+    category := c.Query("category")
+    startDate := c.Query("startDate")
+    endDate := c.Query("endDate")
+
+    limitStr := c.Query("limit")
+    offsetStr := c.Query("offset")
+
+    limit, err := strconv.Atoi(limitStr)
+    if err != nil || limit <= 0 {
+        limit = 20 // default
+    }
+
+    offset, err := strconv.Atoi(offsetStr)
+    if err != nil || offset < 0 {
+        offset = 0
+    }
+
+    records, err := h.Repo.GetFilteredRecords(userID, recordType, category, startDate, endDate, limit, offset)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "Failed to fetch filtered records"})
+        return
+    }
+
+    c.JSON(200, records)
+}

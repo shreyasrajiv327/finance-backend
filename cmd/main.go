@@ -80,6 +80,7 @@ records.GET("/category-summary", recordHandler.GetCategorySummary)
 records.GET("/recent", recordHandler.GetRecentRecords)
 records.GET("/summary", recordHandler.GetSummary)
 records.GET("/monthly", recordHandler.GetMonthlySummary)
+records.GET("/filtered", recordHandler.GetFilteredRecords)
 }
 
 	// Start server (ALWAYS LAST)
