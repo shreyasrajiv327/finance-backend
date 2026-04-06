@@ -1,0 +1,20 @@
+🔐 Logging in users...
+✅ Tokens fetched
+
+📊 Testing APIs...
+==================================
+
+--- SUMMARY (EDITOR) ---
+{"balance":122700,"total_expense":38300,"total_income":161000}
+--- CATEGORY SUMMARY ---
+[{"category":"rent","total":36000},{"category":"food","total":2000},{"category":"transport","total":300}]
+--- RECENT ---
+[{"id":14,"user_id":2,"amount":200,"type":"expense","category":"food","date":"2026-04-04T20:25:25.706902Z","notes":"","created_at":"2026-04-04T20:25:25.70722Z"},{"id":13,"user_id":2,"amount":200,"type":"expense","category":"food","date":"0001-01-01T00:00:00Z","notes":"","created_at":"2026-04-04T19:54:07.246642Z"},{"id":12,"user_id":2,"amount":200,"type":"expense","category":"food","date":"0001-01-01T00:00:00Z","notes":"","created_at":"2026-04-04T19:53:45.853292Z"},{"id":3,"user_id":2,"amount":52000,"type":"income","category":"salary","date":"2025-02-01T00:00:00Z","notes":"Salary Feb","created_at":"2026-04-04T19:53:32.459263Z"},{"id":5,"user_id":2,"amount":8000,"type":"income","category":"freelance","date":"2025-03-10T00:00:00Z","notes":"Freelance","created_at":"2026-04-04T19:53:32.459263Z"}]
+--- RBAC TEST (VIEWER CREATE RECORD) ---
+403
+--- RBAC TEST (EDITOR CREATE RECORD) ---
+201
+✅ Tests completed.
+
+--- FILTERED RECORDS (EDITOR) ---
+[{"id":15,"user_id":2,"amount":200,"type":"expense","category":"food","date":"2026-04-05T12:22:07.114236Z","notes":"","created_at":"2026-04-05T12:22:07.114788Z"},{"id":14,"user_id":2,"amount":200,"type":"expense","category":"food","date":"2026-04-04T20:25:25.706902Z","notes":"","created_at":"2026-04-04T20:25:25.70722Z"}]
