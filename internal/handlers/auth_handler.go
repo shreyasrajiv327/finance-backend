@@ -84,7 +84,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// 🔥 FIX: CHECK bcrypt result
+	//  FIX: CHECK bcrypt result
 	err = bcrypt.CompareHashAndPassword(
 		[]byte(user.Password),
 		[]byte(input.Password),

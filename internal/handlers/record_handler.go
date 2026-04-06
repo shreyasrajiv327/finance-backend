@@ -225,7 +225,7 @@ func (h *RecordHandler) GetFilteredRecords(c *gin.Context) {
 
     limit, err := strconv.Atoi(limitStr)
     if err != nil || limit <= 0 {
-        limit = 20 // default
+        limit = 20 
     }
 
     offset, err := strconv.Atoi(offsetStr)
